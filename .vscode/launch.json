@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-EcomarketApplication<ecomarket-web>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.ecomarket.EcomarketApplication",
+      "projectName": "ecomarket-web",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

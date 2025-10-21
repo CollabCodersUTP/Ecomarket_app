@@ -1,0 +1,7 @@
+# Archivos de dependencia
+/node_modules
+/ecofrotntend/node_modules
+
+# Archivos de logs y cache (opcional)
+npm-debug.log
+.DS_Store
