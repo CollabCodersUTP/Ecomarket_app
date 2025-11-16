@@ -11,7 +11,6 @@ import { AdminPanel } from "./components/AdminPanel";
 import { OrderTracking } from "./components/OrderTracking";
 import { ReturnsManagement } from "./components/ReturnsManagement";
 import { Toaster } from "./components/ui/sonner";
-import {TestDialog} from "./components/ui/testDialog";
 
 type Page =
   | "home"
@@ -52,53 +51,8 @@ function App() {
           <Route path="" element={<HomePage/>}/>
           <Route path="/admin" element={<AdminPanel/>}/>
           <Route path="/vendor" element={<VendorDashboard/>}/>
-          <Route path="/test" element={<TestDialog/>}/>
         </Routes>
       </BrowserRouter>
-      {/*
-      {currentPage === "home" && (
-        <HomePage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "catalog" && (
-        <ProductCatalog onNavigate={handleNavigate} />
-      )}
-      {currentPage === "auth" && (
-        <AuthPage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "product" && (
-        <ProductDetail
-          onNavigate={handleNavigate}
-          onAddToCart={handleAddToCart}
-        />
-      )}
-      {currentPage === "vendor" && (
-        <VendorDashboard onNavigate={handleNavigate} />
-      )}
-      {currentPage === "cart" && (
-        <Checkout onNavigate={handleNavigate} />
-      )}
-      {currentPage === "checkout" && (
-        <Checkout onNavigate={handleNavigate} />
-      )}
-      {currentPage === "admin" && (
-        <AdminPanel onNavigate={handleNavigate} />
-      )}
-      {currentPage === "orders" && (
-        <OrderTracking onNavigate={handleNavigate} />
-      )}
-      {currentPage === "returns" && (
-        <ReturnsManagement onNavigate={handleNavigate} />
-      )} */}
-      {/*currentPage === "favorites" && (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-foreground mb-2">Favoritos</h2>
-            <p className="text-muted-foreground">
-              Esta sección está en desarrollo
-            </p>
-          </div>
-        </div>
-      )*/}
 
       <Toaster />
 
