@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -42,6 +42,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {postElement, getElements, deleteById} from "./util/requests";
+import {ModalDeleteConfirmation, ModalOperationState} from "./ui/modalConfirmation";
 
 interface VendorDashboardProps {
   onNavigate: (page: string) => void;
@@ -56,60 +58,124 @@ const salesData = [
   { name: "Jun", ventas: 5500 },
 ];
 
-const products = [
-  {
-    id: 1,
-    name: "Aceite de Oliva Orgánico",
-    category: "Alimentación",
-    price: 12.99,
-    stock: 45,
-    sales: 127,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Jabón Natural de Lavanda",
-    category: "Cosmética",
-    price: 6.5,
-    stock: 89,
-    sales: 234,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Bolsa Reutilizable Algodón",
-    category: "Hogar",
-    price: 8.99,
-    stock: 12,
-    sales: 56,
-    status: "low-stock",
-  },
-];
 
-export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
+type Product = {
+  productoId: number,
+  nombreProducto:string,
+  vendedor: string,
+  categoria: string,
+  stock:number,
+  precio: number,
+  calificacionPromedio: number,
+  estaActivo: boolean
+}
+
+type Category = {
+  "categoriaId": number,
+  "nombreCategoria": string,
+  "descripcion": string,
+  "imagenUrl": null,
+}
+
+type BodyProduct = {
+  vendedor: number,
+  nombreProducto: string,
+  categoria: number,
+  descripcion: string,
+  precio: number,
+  stock: number
+}
+
+export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [openModal, setOpenModal] = useState<boolean>(null);
+  const [childModal, setChildModal] = useState<boolean>(null);
+
+  /*Categoria*/
+  const [category, setCategory] = useState<Category[]>();
+
+
+  /*Productos*/
+  const [products, setProducts] = useState<Product[]>();
+  let [activeProduct, setActiveProduct] =  useState<Product| null>(null);
+  const [indexProduct, setIndexProduct] =  useState<number>(null);
 
   // State for Add Product Form
-  const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
-  const [certification, setCertification] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [stock, setStock] = useState("");
-  const [origin, setOrigin] = useState("");
+
+  const [productNameForm, setProductNameForm] = useState<string>("");
+  const [categoryForm, setCategoryForm] = useState("");
+  const [categoryIdForm, setCategoryIdForm] = useState<number>(null);
+  const [descriptionForm, setDescriptionForm] = useState("");
+  const [priceForm, setPriceForm] = useState<number>(0);
+  const [stockForm, setStockForm] = useState<number>(0);
+
+  const handleSelectedChange = (selectedElement:string) => {
+        setCategoryForm(selectedElement);
+
+        const selectedCat = category.find((cat) => cat.nombreCategoria === selectedElement);
+        if (selectedCat){
+          setCategoryIdForm(selectedCat.categoriaId);
+          console.log("selected", selectedCat, categoryForm);
+        }
+  }
+
+  const [bodyForm, setBodyForm] = useState<BodyProduct>();
+  const submit = () => {
+        const data: BodyProduct = {
+              vendedor: 1,
+              categoria: categoryIdForm,
+              nombreProducto: productNameForm,
+              descripcion: descriptionForm,
+              precio: priceForm,
+              stock: stockForm
+        }
+
+        const fetchFormProduct = async () => {
+          const responseForm = await postElement("productos", data)
+          console.log("responseForm", responseForm);
+        }
+        fetchFormProduct().catch(e => console.log(e))
+  }
+
+  useEffect(() => {
+    setProducts(null);
+
+    switch (activeTab) {
+      case "overview":
+        console.log( "En tab "+ activeTab);
+        break;
+
+      case "products":
+        console.log( "En tab "+ activeTab);
+        const fetchProd = async () => {
+          const responseProducts = await getElements("productos")
+          setProducts(responseProducts);
+        }
+        fetchProd().catch(e => console.log(e));
+
+        break;
+
+      case "add-product" :
+        const fetchCat = async () => {
+          const responseCategories = await getElements("categorias");
+          setCategory(responseCategories);
+        }
+        fetchCat().catch(e => console.log(e));
+
+    }
+  }, [activeTab]);
+
 
   const handlePublishProduct = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Publishing product:", {
-      productName,
-      category,
-      certification,
-      description,
-      price,
-      stock,
-      origin,
+      productNameForm,
+      categoryForm,
+      descriptionForm,
+      priceForm,
+      stockForm,
     });
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,22 +289,22 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                 </Button>
               </div>
               <div className="space-y-3">
-                {products.slice(0, 3).map((product) => (
+                {products && products.slice(0, 3).map((product) => (
                   <div
-                    key={product.id}
+                    key={product.productoId}
                     className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
                   >
                     <div>
-                      <h4 className="text-foreground">{product.name}</h4>
+                      <h4 className="text-foreground">{product.nombreProducto}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {product.sales} ventas
+                         ventasss
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-primary">€{product.price}</div>
+                      <div className="text-primary">€{product.precio}</div>
                       <Badge
                         variant={
-                          product.status === "active"
+                          product.estaActivo === true
                             ? "default"
                             : "destructive"
                         }
@@ -281,16 +347,16 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id}>
+                  {products && products.map((product, index) => (
+                    <TableRow key={product.productoId}>
                       <TableCell>
-                        <div className="text-foreground">{product.name}</div>
+                        <div className="text-foreground">{product.nombreProducto}</div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {product.category}
+                        {product.categoria}
                       </TableCell>
                       <TableCell className="text-foreground">
-                        €{product.price}
+                        €{product.precio}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -302,22 +368,22 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {product.sales}
+                        {product.calificacionPromedio}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            product.status === "active"
+                            product.estaActivo === true
                               ? "default"
                               : "secondary"
                           }
                           className={
-                            product.status === "active"
+                            product.estaActivo === true
                               ? "bg-green-100 text-green-800"
                               : ""
                           }
                         >
-                          {product.status === "active"
+                          {product.estaActivo === true
                             ? "Activo"
                             : "Stock Bajo"}
                         </Badge>
@@ -330,7 +396,11 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                           <Button variant="ghost" size="icon">
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" onClick={() => {
+                            setActiveProduct(product);
+                            setOpenModal(true);
+                            setIndexProduct(index);
+                          }}>
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
                         </div>
@@ -341,6 +411,8 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
               </Table>
             </Card>
           </TabsContent>
+          {activeProduct && (ModalDeleteConfirmation("productos", indexProduct, activeProduct.productoId, activeProduct.nombreProducto, products, setProducts,openModal, setOpenModal, setChildModal ))}
+          {childModal && (ModalOperationState(childModal,setChildModal))}
 
           {/* Add Product Tab */}
           <TabsContent value="add-product">
@@ -352,57 +424,22 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                   <Input
                     id="product-name"
                     placeholder="Ej: Aceite de Oliva Orgánico Extra Virgen"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
+                    value={productNameForm}
+                    onChange={(e) => setProductNameForm(e.target.value)}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">Categoría *</Label>
-                    <Select value={category} onValueChange={setCategory}>
+                    <Select value={categoryForm} onValueChange={handleSelectedChange}>
                       <SelectTrigger id="category">
                         <SelectValue placeholder="Seleccionar categoría" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="alimentacion">
-                          Alimentación
-                        </SelectItem>
-                        <SelectItem value="cosmetica">
-                          Cosmética Natural
-                        </SelectItem>
-                        <SelectItem value="textil">
-                          Textil Sostenible
-                        </SelectItem>
-                        <SelectItem value="hogar">Hogar Ecológico</SelectItem>
-                        <SelectItem value="personal">
-                          Cuidado Personal
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="certification">Certificación *</Label>
-                    <Select
-                      value={certification}
-                      onValueChange={setCertification}
-                    >
-                      <SelectTrigger id="certification">
-                        <SelectValue placeholder="Seleccionar certificación" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="organico">
-                          Certificado Orgánico
-                        </SelectItem>
-                        <SelectItem value="biodegradable">
-                          100% Biodegradable
-                        </SelectItem>
-                        <SelectItem value="zero-waste">Zero Waste</SelectItem>
-                        <SelectItem value="cruelty-free">
-                          Cruelty Free
-                        </SelectItem>
-                        <SelectItem value="gots">GOTS Certificado</SelectItem>
+                        {category && category.map((categoria) => (
+                            <SelectItem key={categoria.categoriaId} value={categoria.nombreCategoria}>{categoria.nombreCategoria}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -414,8 +451,8 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                     id="description"
                     placeholder="Describe las características ecológicas de tu producto, origen, proceso de producción sostenible..."
                     rows={5}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={descriptionForm}
+                    onChange={(e) => setDescriptionForm(e.target.value)}
                   />
                 </div>
 
@@ -427,8 +464,8 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                       type="number"
                       step="0.01"
                       placeholder="0.00"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
+                      value={priceForm}
+                      onChange={(e) => setPriceForm(parseInt(e.target.value))}
                     />
                   </div>
 
@@ -438,18 +475,8 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                       id="stock"
                       type="number"
                       placeholder="0"
-                      value={stock}
-                      onChange={(e) => setStock(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="origin">Origen *</Label>
-                    <Input
-                      id="origin"
-                      placeholder="España"
-                      value={origin}
-                      onChange={(e) => setOrigin(e.target.value)}
+                      value={stockForm}
+                      onChange={(e) => setStockForm(parseInt(e.target.value))}
                     />
                   </div>
                 </div>
@@ -474,7 +501,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                   >
                     Publicar Producto
                   </Button>
-                  <Button type="button" variant="outline">
+                  <Button type="button" variant="outline" onClick={bodyForm}>
                     Guardar como Borrador
                   </Button>
                 </div>

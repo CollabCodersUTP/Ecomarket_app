@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "./components/Header";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
 import { HomePage } from "./components/HomePage";
 import { ProductCatalog } from "./components/ProductCatalog";
 import { AuthPage } from "./components/AuthPage";
@@ -25,13 +26,14 @@ type Page =
   | "favorites";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>("home");
+
+  //const [currentPage, setCurrentPage] = useState<Page>("home");
   const [cartCount, setCartCount] = useState(0);
 
-  const handleNavigate = (page: string) => {
+  /*const handleNavigate = (page: string) => {
     setCurrentPage(page as Page);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  };*/
 
   const handleAddToCart = () => {
     setCartCount((prev) => prev + 1);
@@ -40,54 +42,17 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        onNavigate={handleNavigate}
-        currentPage={currentPage}
+        /*onNavigate={handleNavigate}
+        currentPage={currentPage}*/
         cartCount={cartCount}
       />
-
-      {currentPage === "home" && (
-        <HomePage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "catalog" && (
-        <ProductCatalog onNavigate={handleNavigate} />
-      )}
-      {currentPage === "auth" && (
-        <AuthPage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "product" && (
-        <ProductDetail
-          onNavigate={handleNavigate}
-          onAddToCart={handleAddToCart}
-        />
-      )}
-      {currentPage === "vendor" && (
-        <VendorDashboard onNavigate={handleNavigate} />
-      )}
-      {currentPage === "cart" && (
-        <Checkout onNavigate={handleNavigate} />
-      )}
-      {currentPage === "checkout" && (
-        <Checkout onNavigate={handleNavigate} />
-      )}
-      {currentPage === "admin" && (
-        <AdminPanel onNavigate={handleNavigate} />
-      )}
-      {currentPage === "orders" && (
-        <OrderTracking onNavigate={handleNavigate} />
-      )}
-      {currentPage === "returns" && (
-        <ReturnsManagement onNavigate={handleNavigate} />
-      )}
-      {currentPage === "favorites" && (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-foreground mb-2">Favoritos</h2>
-            <p className="text-muted-foreground">
-              Esta sección está en desarrollo
-            </p>
-          </div>
-        </div>
-      )}
+      <BrowserRouter>
+        <Routes>
+          <Route path="" element={<HomePage/>}/>
+          <Route path="/admin" element={<AdminPanel/>}/>
+          <Route path="/vendor" element={<VendorDashboard/>}/>
+        </Routes>
+      </BrowserRouter>
 
       <Toaster />
 
@@ -110,7 +75,7 @@ function App() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <button
-                    onClick={() => handleNavigate("catalog")}
+                    //onClick={() => handleNavigate("catalog")}
                     className="hover:text-primary"
                   >
                     Catálogo de Productos
@@ -118,7 +83,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => handleNavigate("catalog")}
+                    //onClick={() => handleNavigate("catalog")}
                     className="hover:text-primary"
                   >
                     Categorías
@@ -126,7 +91,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => handleNavigate("catalog")}
+                    //onClick={() => handleNavigate("catalog")}
                     className="hover:text-primary"
                   >
                     Ofertas Especiales
@@ -134,7 +99,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => handleNavigate("catalog")}
+                    //onClick={() => handleNavigate("catalog")}
                     className="hover:text-primary"
                   >
                     Nuevos Productos
@@ -147,7 +112,7 @@ function App() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <button
-                    onClick={() => handleNavigate("vendor")}
+                    //onClick={() => handleNavigate("vendor")}
                     className="hover:text-primary"
                   >
                     Empezar a Vender
@@ -155,7 +120,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => handleNavigate("vendor")}
+                    //onClick={() => handleNavigate("vendor")}
                     className="hover:text-primary"
                   >
                     Guía del Vendedor
@@ -183,7 +148,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => handleNavigate("orders")}
+                    //onClick={() => handleNavigate("orders")}
                     className="hover:text-primary"
                   >
                     Seguimiento de Pedidos
@@ -191,7 +156,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => handleNavigate("returns")}
+                    //onClick={() => handleNavigate("returns")}
                     className="hover:text-primary"
                   >
                     Devoluciones
