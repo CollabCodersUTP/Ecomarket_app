@@ -18,11 +18,11 @@ public class Producto {
     @Column(name = "producto_id")
     private Integer productoId;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendedor_id", nullable = false)
     private Usuario vendedor;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
     
