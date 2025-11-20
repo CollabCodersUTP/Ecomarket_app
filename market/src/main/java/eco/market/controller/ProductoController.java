@@ -1,13 +1,10 @@
 package eco.market.controller;
 
-import eco.market.dto.ProductoRequest;
 import eco.market.dto.ProductoResponse;
 import eco.market.dto.CrearProductoRequest;
 import eco.market.config.JwtUtil;
 import eco.market.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -45,7 +42,7 @@ public class ProductoController {
     
     @GetMapping
     public ResponseEntity<List<ProductoResponse>> obtenerTodosLosProductos() {
-        List<ProductoResponse> productos = productoService.getAllProducts();
+        List<ProductoResponse> productos = productoService.obtenerTodosLosProductos();
         return ResponseEntity.ok(productos);
     }
     
@@ -57,12 +54,6 @@ public class ProductoController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-    }
-
-    @DeleteMapping("/{idProduct}")
-    public ResponseEntity<Void> deleteById(@PathVariable Integer idProduct) throws Exception {
-        productoService.deleteById(idProduct);
-        return ResponseEntity.noContent().build();
     }
     
     @GetMapping("/categoria/{categoriaId}")

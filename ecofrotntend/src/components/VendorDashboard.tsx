@@ -64,13 +64,6 @@ interface ProductoVendedor {
   fechaCreacion: string;
 }
 
-type Category = {
-  categoriaId: number;
-  nombreCategoria: string;
-  descripcion: string;
-  imagenUrl: null;
-};
-
 const salesData = [
   { name: "Ene", ventas: 4000 },
   { name: "Feb", ventas: 3000 },
@@ -82,79 +75,30 @@ const salesData = [
 
 export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [user, setUser] = useState<any>(null);
+  const [productos, setProductos] = useState<ProductoVendedor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // Categories
-  const [category, setCategory] = useState<Category[] | undefined>();
-
-  // Products
-  const [productos, setProductos] = useState<ProductoVendedor[] | undefined>();
-
-  // Form states for Add Product
+  // State for Add Product Form
   const [productName, setProductName] = useState("");
-  const [categoryForm, setCategoryForm] = useState("");
-  const [categoryIdForm, setCategoryIdForm] = useState<number | null>(null);
+  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [esOrganico, setEsOrganico] = useState(false);
   const [esVegano, setEsVegano] = useState(false);
 
-  // User and error states
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  const handleSelectedChange = (selectedElement: string) => {
-    setCategoryForm(selectedElement);
-    if (category) {
-      const selectedCat = category.find((cat) => cat.nombreCategoria === selectedElement);
-      if (selectedCat) {
-        setCategoryIdForm(selectedCat.categoriaId);
-      }
-    }
-  };
-
+  // Cargar usuario del localStorage
   useEffect(() => {
-    setProductos(undefined);
-
-    switch (activeTab) {
-      case "overview":
-        break;
-
-      case "products":
-        const fetchProd = async () => {
-          const responseProducts = await fetch("http://localhost:8080/api/productos");
-          if (responseProducts.ok) {
-            const data = await responseProducts.json();
-            setProductos(data);
-          }
-        };
-        fetchProd().catch((e) => console.log(e));
-        break;
-
-      case "add-product":
-        const fetchCat = async () => {
-          const responseCategories = await fetch("http://localhost:8080/api/categorias");
-          if (responseCategories.ok) {
-            const data = await responseCategories.json();
-            setCategory(data);
-          }
-        };
-        fetchCat().catch((e) => console.log(e));
-        break;
-    }
-  }, [activeTab]);
-
-  // Load user from localStorage
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = localStorage.getItem("user"); 
     if (userStr) {
       setUser(JSON.parse(userStr));
     }
   }, []);
 
-  // Load vendor products
+  // Cargar productos del vendedor
   useEffect(() => {
     if (user) {
       cargarProductos();
@@ -184,7 +128,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
     setError("");
     setSuccess("");
 
-    if (!productName || !categoryForm || !description || !price || !stock) {
+    if (!productName || !category || !description || !price || !stock) {
       setError("Todos los campos son requeridos");
       return;
     }
@@ -201,7 +145,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
         descripcion: description,
         precio: parseFloat(price),
         stock: parseInt(stock),
-        categoriaId: categoryIdForm,
+        categoriaId: parseInt(category),
         esOrganico,
         esVegano,
       };
@@ -220,7 +164,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
           "Producto publicado correctamente. Pendiente de verificación."
         );
         setProductName("");
-        setCategoryForm("");
+        setCategory("");
         setDescription("");
         setPrice("");
         setStock("");
@@ -395,7 +339,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                 </Button>
               </div>
               <div className="space-y-3">
-                {productos && productos.slice(0, 3).map((producto: ProductoVendedor) => (
+                {productos.slice(0, 3).map((producto: ProductoVendedor) => (
                   <div
                     key={producto.productoId}
                     className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
@@ -421,7 +365,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                     </div>
                   </div>
                 ))}
-                {!productos || productos.length === 0 && (
+                {productos.length === 0 && (
                   <p className="text-muted-foreground text-center py-4">
                     No hay productos aún
                   </p>
@@ -458,7 +402,7 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productos && productos.map((producto: ProductoVendedor) => (
+                  {productos.map((producto: ProductoVendedor) => (
                     <TableRow key={producto.productoId}>
                       <TableCell>
                         <div className="text-foreground">
@@ -540,16 +484,16 @@ export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">Categoría *</Label>
-                    <Select value={categoryForm} onValueChange={handleSelectedChange}>
+                    <Select value={category} onValueChange={setCategory}>
                       <SelectTrigger id="category">
                         <SelectValue placeholder="Seleccionar categoría" />
                       </SelectTrigger>
                       <SelectContent>
-                        {category && category.map((cat) => (
-                          <SelectItem key={cat.categoriaId} value={String(cat.categoriaId)}>
-                            {cat.nombreCategoria}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="1">Alimentación</SelectItem>
+                        <SelectItem value="2">Cosmética Natural</SelectItem>
+                        <SelectItem value="3">Textil Sostenible</SelectItem>
+                        <SelectItem value="4">Hogar Ecológico</SelectItem>
+                        <SelectItem value="5">Cuidado Personal</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
