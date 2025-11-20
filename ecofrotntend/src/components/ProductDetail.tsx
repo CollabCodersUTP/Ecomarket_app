@@ -20,7 +20,7 @@ import {
 
 interface ProductDetailProps {
   onNavigate: (page: string) => void;
-  onAddToCart: () => void;
+  onAddToCart: (product: any, qty: number) => void;
 }
 
 export function ProductDetail({ onNavigate, onAddToCart }: ProductDetailProps) {
@@ -166,7 +166,11 @@ export function ProductDetail({ onNavigate, onAddToCart }: ProductDetailProps) {
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   size="lg"
                   onClick={() => {
-                    onAddToCart();
+                    onAddToCart({
+                      name: "Aceite de Oliva Orgánico Extra Virgen",
+                      price: 12.99,
+                      image: images[selectedImage],
+                    }, quantity);
                     onNavigate("cart");
                   }}
                 >

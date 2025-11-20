@@ -1,84 +1,73 @@
 import { useState } from "react";
 import { Header } from "./components/Header";
-import {BrowserRouter, Routes, Route} from "react-router-dom";
 import { HomePage } from "./components/HomePage";
-import { ProductCatalog } from "./components/ProductCatalog";
+import { ProductCatalog } from "./components/ProductCatalogNew";
 import { AuthPage } from "./components/AuthPage";
 import { AccountPage } from "./components/AccountPage";
 import { ProductDetail } from "./components/ProductDetail";
 import { VendorDashboard } from "./components/VendorDashboard";
-import { Checkout } from "./components/Checkout";
+import { Checkout } from "./components/CheckoutNew";
 import { AdminPanel } from "./components/AdminPanel";
 import { OrderTracking } from "./components/OrderTracking";
 import { ReturnsManagement } from "./components/ReturnsManagement";
 import { Toaster } from "./components/ui/sonner";
-
-type Page =
-  | "home"
-  | "catalog"
-  | "auth"
-  | "account"
-  | "product"
-  | "vendor"
-  | "cart"
-  | "checkout"
-  | "admin"
-  | "orders"
-  | "returns"
-  | "favorites";
+import { useCart } from "./hooks/useCart";
 
 function App() {
+  const [currentPage, setCurrentPage] = useState<string>("home");
+  const cart = useCart();
 
-  //const [currentPage, setCurrentPage] = useState<Page>("home");
-  const [cartCount, setCartCount] = useState(0);
-
-  /*const handleNavigate = (page: string) => {
-    setCurrentPage(page as Page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };*/
-
-  const handleAddToCart = () => {
-    setCartCount((prev) => prev + 1);
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page);
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header
-        /*onNavigate={handleNavigate}
-        currentPage={currentPage}*/
-        cartCount={cartCount}
+        onNavigate={handleNavigate}
+        currentPage={currentPage}
+        cartCount={cart.getCount()}
       />
 
-      {currentPage === "home" && (
-        <HomePage onNavigate={handleNavigate} />
-      )}
+      {currentPage === "home" && <HomePage onNavigate={handleNavigate} />}
       {currentPage === "catalog" && (
-        <ProductCatalog onNavigate={handleNavigate} />
+        <ProductCatalog
+          onNavigate={handleNavigate}
+          onAddToCart={cart.addItem}
+        />
       )}
-      {currentPage === "auth" && (
-        <AuthPage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "account" && (
-        <AccountPage onNavigate={handleNavigate} />
-      )}
+      {currentPage === "auth" && <AuthPage onNavigate={handleNavigate} />}
+      {currentPage === "account" && <AccountPage onNavigate={handleNavigate} />}
       {currentPage === "product" && (
         <ProductDetail
           onNavigate={handleNavigate}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product: any, qty: number) =>
+            cart.addItem(product, qty)
+          }
         />
       )}
       {currentPage === "vendor" && (
         <VendorDashboard onNavigate={handleNavigate} />
       )}
       {currentPage === "cart" && (
-        <Checkout onNavigate={handleNavigate} />
+        <Checkout
+          onNavigate={handleNavigate}
+          cartItems={cart.items}
+          onUpdateQuantity={cart.updateQuantity}
+          onRemoveItem={cart.removeItem}
+          cartTotal={cart.getTotal()}
+        />
       )}
       {currentPage === "checkout" && (
-        <Checkout onNavigate={handleNavigate} />
+        <Checkout
+          onNavigate={handleNavigate}
+          cartItems={cart.items}
+          onUpdateQuantity={cart.updateQuantity}
+          onRemoveItem={cart.removeItem}
+          cartTotal={cart.getTotal()}
+        />
       )}
-      {currentPage === "admin" && (
-        <AdminPanel onNavigate={handleNavigate} />
-      )}
+      {currentPage === "admin" && <AdminPanel />}
       {currentPage === "orders" && (
         <OrderTracking onNavigate={handleNavigate} />
       )}
@@ -103,13 +92,11 @@ function App() {
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h4 className="text-foreground mb-4">
-                Sobre Ecomarket
-              </h4>
+              <h4 className="text-foreground mb-4">Sobre Ecomarket</h4>
               <p className="text-muted-foreground text-sm">
-                Marketplace líder en productos ecológicos y
-                sostenibles. Conectamos productores responsables
-                con consumidores conscientes.
+                Marketplace líder en productos ecológicos y sostenibles.
+                Conectamos productores responsables con consumidores
+                conscientes.
               </p>
             </div>
             <div>
@@ -174,9 +161,7 @@ function App() {
                   </button>
                 </li>
                 <li>
-                  <button className="hover:text-primary">
-                    Tarifas
-                  </button>
+                  <button className="hover:text-primary">Tarifas</button>
                 </li>
               </ul>
             </div>
@@ -205,17 +190,15 @@ function App() {
                   </button>
                 </li>
                 <li>
-                  <button className="hover:text-primary">
-                    Contacto
-                  </button>
+                  <button className="hover:text-primary">Contacto</button>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
             <p>
-              © 2024 Ecomarket. Todos los derechos reservados.
-              | Política de Privacidad | Términos y Condiciones
+              © 2024 Ecomarket. Todos los derechos reservados. | Política de
+              Privacidad | Términos y Condiciones
             </p>
           </div>
         </div>

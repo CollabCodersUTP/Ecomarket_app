@@ -23,7 +23,6 @@ public class ProductoRequest {
 
     private Integer stock;
 
-    /*
 
     private String imagenPrincipal;
 
@@ -38,6 +37,6 @@ public class ProductoRequest {
     private BigDecimal calificacionPromedio;
 
     private Integer totalCalificaciones;
-    */
+    
 
 }
