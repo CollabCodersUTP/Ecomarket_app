@@ -3,6 +3,7 @@ import { Header } from "./components/Header";
 import { HomePage } from "./components/HomePage";
 import { ProductCatalog } from "./components/ProductCatalog";
 import { AuthPage } from "./components/AuthPage";
+import { AccountPage } from "./components/AccountPage";
 import { ProductDetail } from "./components/ProductDetail";
 import { VendorDashboard } from "./components/VendorDashboard";
 import { Checkout } from "./components/Checkout";
@@ -15,6 +16,7 @@ type Page =
   | "home"
   | "catalog"
   | "auth"
+  | "account"
   | "product"
   | "vendor"
   | "cart"
@@ -53,6 +55,9 @@ function App() {
       )}
       {currentPage === "auth" && (
         <AuthPage onNavigate={handleNavigate} />
+      )}
+      {currentPage === "account" && (
+        <AccountPage onNavigate={handleNavigate} />
       )}
       {currentPage === "product" && (
         <ProductDetail
