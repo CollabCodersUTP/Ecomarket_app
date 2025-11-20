@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Search, ShoppingCart, User, Heart, Menu, Leaf } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -8,7 +9,26 @@ interface HeaderProps {
   cartCount: number;
 }
 
-export function Header({ cartCount }: HeaderProps) {
+export function Header({ onNavigate, currentPage, cartCount }: HeaderProps) {
+  const [user, setUser] = useState<null | { nombre?: string; email?: string; rol?: string }>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        setUser(JSON.parse(raw));
+      }
+    } catch (e) {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    onNavigate("auth");
+  };
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-border shadow-sm">
       <div className="container mx-auto px-4">
@@ -65,13 +85,30 @@ export function Header({ cartCount }: HeaderProps) {
                 </span>
               )}
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              //onClick={() => onNavigate("auth")}
-            >
-              <User className="w-5 h-5" />
-            </Button>
+            {user ? (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setMenuOpen((s) => !s);
+                    onNavigate("account");
+                  }}
+                >
+                  <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                    {user.nombre ? user.nombre.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
+                  </div>
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onNavigate("auth")}
+              >
+                <User className="w-5 h-5" />
+              </Button>
+            )}
             <Button
               //onClick={() => onNavigate("vendor")}
               className="ml-2 bg-primary text-primary-foreground hover:bg-primary/90"

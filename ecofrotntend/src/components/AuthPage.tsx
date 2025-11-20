@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -14,6 +14,18 @@ interface AuthPageProps {
 export function AuthPage({ onNavigate }: AuthPageProps) {
   const [activeTab, setActiveTab] = useState("login");
 
+  // If user already logged in, redirect to account
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        onNavigate("account");
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [onNavigate]);
+
   // State for Login form
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -24,21 +36,115 @@ export function AuthPage({ onNavigate }: AuthPageProps) {
   const [registerPhone, setRegisterPhone] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirm, setRegisterConfirm] = useState("");
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registerSuccess, setRegisterSuccess] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    console.log("Attempting login with:", {
-      email: loginEmail,
-      password: loginPassword,
-    });
+  const handleLogin = async () => {
+    setRegisterError(null);
+    setRegisterSuccess(null);
+
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const message = typeof data === "string" ? data : data?.mensaje || data?.error || JSON.stringify(data);
+        setRegisterError(message || "Error en el login");
+        return;
+      }
+
+      // Controller returns { mensaje, usuario: AuthResponse }
+      const auth = data?.usuario || data;
+
+      const userObj = {
+        token: auth?.token,
+        usuarioId: auth?.usuarioId,
+        email: auth?.email,
+        nombre: auth?.nombre,
+        rol: auth?.rol,
+      };
+
+      if (userObj.token) {
+        localStorage.setItem("user", JSON.stringify(userObj));
+      }
+
+      setRegisterSuccess("Inicio de sesión exitoso. Redirigiendo...");
+      setTimeout(() => onNavigate("home"), 800);
+    } catch (err: any) {
+      setRegisterError(err?.message || "Error al conectar con el servidor");
+    }
   };
 
-  const handleRegister = () => {
-    console.log("Attempting register with:", {
-      name: registerName,
+  const handleRegister = async () => {
+    setRegisterError(null);
+    setRegisterSuccess(null);
+
+    if (registerPassword !== registerConfirm) {
+      setRegisterError("Las contraseñas no coinciden");
+      return;
+    }
+
+    // Split nombre completo into nombre and apellido (simple heuristic)
+    const parts = registerName.trim().split(/\s+/);
+    const nombre = parts.slice(0, parts.length > 1 ? parts.length - 1 : 1).join(" ") || parts[0] || "";
+    const apellido = parts.length > 1 ? parts[parts.length - 1] : "";
+
+    const payload = {
+      nombre,
+      apellido,
       email: registerEmail,
-      phone: registerPhone,
       password: registerPassword,
-    });
+      telefono: registerPhone,
+      direccion: "",
+      ciudad: "",
+      pais: "",
+      codigoPostal: "",
+    };
+
+    try {
+      setRegisterLoading(true);
+
+      const res = await fetch("http://localhost:8080/api/auth/registro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // backend may return plain string or object
+        const message = typeof data === "string" ? data : data?.mensaje || data?.error || JSON.stringify(data);
+        setRegisterError(message || "Error en el registro");
+        return;
+      }
+
+      // Expected AuthResponse: token, usuarioId, email, nombre, rol
+      const token = data?.token || data?.Token || data?.authToken || data?.accessToken;
+      // Some controllers may return the AuthResponse directly
+      const authToken = token || data?.token || data?.token;
+
+      // If token is not in root, try data.token (already attempted). As fallback, if data has 'token' return, use it.
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      } else if (authToken) {
+        localStorage.setItem("token", authToken);
+      }
+
+      setRegisterSuccess("Registro exitoso. Redirigiendo...");
+      // Navigate to home or call onNavigate
+      setTimeout(() => onNavigate("home"), 1000);
+    } catch (err: any) {
+      setRegisterError(err?.message || "Error al conectar con el servidor");
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
   return (
@@ -109,9 +215,16 @@ export function AuthPage({ onNavigate }: AuthPageProps) {
               <Button
                 onClick={handleLogin}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={registerLoading}
               >
                 Iniciar Sesión
               </Button>
+              {registerError && (
+                <p className="text-sm text-destructive mt-2">{registerError}</p>
+              )}
+              {registerSuccess && (
+                <p className="text-sm text-success mt-2">{registerSuccess}</p>
+              )}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-border"></div>
@@ -239,9 +352,16 @@ export function AuthPage({ onNavigate }: AuthPageProps) {
               <Button
                 onClick={handleRegister}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={registerLoading}
               >
                 Crear Cuenta
               </Button>
+              {registerError && (
+                <p className="text-sm text-destructive mt-2">{registerError}</p>
+              )}
+              {registerSuccess && (
+                <p className="text-sm text-success mt-2">{registerSuccess}</p>
+              )}
             </TabsContent>
           </Tabs>
         </Card>

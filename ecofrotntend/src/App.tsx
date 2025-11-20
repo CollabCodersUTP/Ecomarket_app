@@ -4,6 +4,7 @@ import {BrowserRouter, Routes, Route} from "react-router-dom";
 import { HomePage } from "./components/HomePage";
 import { ProductCatalog } from "./components/ProductCatalog";
 import { AuthPage } from "./components/AuthPage";
+import { AccountPage } from "./components/AccountPage";
 import { ProductDetail } from "./components/ProductDetail";
 import { VendorDashboard } from "./components/VendorDashboard";
 import { Checkout } from "./components/Checkout";
@@ -16,6 +17,7 @@ type Page =
   | "home"
   | "catalog"
   | "auth"
+  | "account"
   | "product"
   | "vendor"
   | "cart"
@@ -46,13 +48,53 @@ function App() {
         currentPage={currentPage}*/
         cartCount={cartCount}
       />
-      <BrowserRouter>
-        <Routes>
-          <Route path="" element={<HomePage/>}/>
-          <Route path="/admin" element={<AdminPanel/>}/>
-          <Route path="/vendor" element={<VendorDashboard/>}/>
-        </Routes>
-      </BrowserRouter>
+
+      {currentPage === "home" && (
+        <HomePage onNavigate={handleNavigate} />
+      )}
+      {currentPage === "catalog" && (
+        <ProductCatalog onNavigate={handleNavigate} />
+      )}
+      {currentPage === "auth" && (
+        <AuthPage onNavigate={handleNavigate} />
+      )}
+      {currentPage === "account" && (
+        <AccountPage onNavigate={handleNavigate} />
+      )}
+      {currentPage === "product" && (
+        <ProductDetail
+          onNavigate={handleNavigate}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+      {currentPage === "vendor" && (
+        <VendorDashboard onNavigate={handleNavigate} />
+      )}
+      {currentPage === "cart" && (
+        <Checkout onNavigate={handleNavigate} />
+      )}
+      {currentPage === "checkout" && (
+        <Checkout onNavigate={handleNavigate} />
+      )}
+      {currentPage === "admin" && (
+        <AdminPanel onNavigate={handleNavigate} />
+      )}
+      {currentPage === "orders" && (
+        <OrderTracking onNavigate={handleNavigate} />
+      )}
+      {currentPage === "returns" && (
+        <ReturnsManagement onNavigate={handleNavigate} />
+      )}
+      {currentPage === "favorites" && (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-foreground mb-2">Favoritos</h2>
+            <p className="text-muted-foreground">
+              Esta sección está en desarrollo
+            </p>
+          </div>
+        </div>
+      )}
 
       <Toaster />
 
