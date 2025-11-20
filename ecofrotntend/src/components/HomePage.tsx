@@ -4,9 +4,9 @@ import { Badge } from "./ui/badge";
 import { Leaf, ShoppingBag, Users, Award, ArrowRight } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
-interface HomePageProps {
+/*interface HomePageProps {
   onNavigate: (page: string) => void;
-}
+}*/
 
 const categories = [
   { name: "Alimentación", icon: "🥬", products: 234 },
@@ -56,7 +56,7 @@ const featuredProducts = [
   },
 ];
 
-export function HomePage({ onNavigate }: HomePageProps) {
+export function HomePage(/*{ onNavigate }: HomePageProps*/) {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -74,7 +74,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button
-                onClick={() => onNavigate("catalog")}
+                //onClick={() => onNavigate("catalog")}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
                 size="lg"
               >
@@ -82,7 +82,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                 Explorar Productos
               </Button>
               <Button
-                onClick={() => onNavigate("vendor")}
+                //onClick={() => onNavigate("vendor")}
                 variant="outline"
                 size="lg"
                 className="border-primary text-primary hover:bg-primary/10"
@@ -149,7 +149,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             <Card
               key={category.name}
               className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-border hover:border-primary/50"
-              onClick={() => onNavigate("catalog")}
+              //onClick={() => onNavigate("catalog")}
             >
               <div className="text-center space-y-2">
                 <div className="text-4xl mb-2">{category.icon}</div>
@@ -177,7 +177,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <Card
                 key={product.id}
                 className="overflow-hidden cursor-pointer hover:shadow-xl transition-shadow border-border group"
-                onClick={() => onNavigate("product")}
+                //onClick={() => onNavigate("product")}
               >
                 <div className="aspect-square overflow-hidden bg-muted">
                   <ImageWithFallback
@@ -223,7 +223,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             Llega a miles de clientes que valoran productos responsables.
           </p>
           <Button
-            onClick={() => onNavigate("vendor")}
+            //onClick={() => onNavigate("vendor")}
             size="lg"
             variant="secondary"
             className="bg-white text-primary hover:bg-white/90"

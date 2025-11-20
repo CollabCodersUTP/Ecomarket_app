@@ -1,43 +1,17 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import {ModalDeleteConfirmation, ModalOperationState} from "./ui/modalConfirmation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table";
-import {
-  Users,
-  Package,
-  TrendingUp,
-  DollarSign,
-  UserCheck,
-  ShoppingBag,
-  Eye,
-  Edit,
-  Trash2,
-} from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
+import {Users, Package, TrendingUp, DollarSign, UserCheck, ShoppingBag, Eye, Edit,Trash2,} from "lucide-react";
+import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,} from "recharts";
+import {getElements} from "./util/requests";
 
-interface AdminPanelProps {
+/*interface AdminPanelProps {
   onNavigate: (page: string) => void;
-}
+}*/
 
 const salesData = [
   { name: "Ene", ventas: 12000 },
@@ -92,33 +66,6 @@ const vendors = [
   },
 ];
 
-const products = [
-  {
-    id: 1,
-    name: "Aceite de Oliva Orgánico",
-    vendor: "EcoFarm S.L.",
-    category: "Alimentación",
-    sales: 456,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Jabón Natural Lavanda",
-    vendor: "Natural Beauty Co.",
-    category: "Cosmética",
-    sales: 789,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Bolsa Algodón Reutilizable",
-    vendor: "PackGreen",
-    category: "Hogar",
-    sales: 234,
-    status: "pending",
-  },
-];
-
 const orders = [
   {
     id: "#ECO-5678",
@@ -150,8 +97,96 @@ const orders = [
   },
 ];
 
-export function AdminPanel({ onNavigate }: AdminPanelProps) {
+type Product = {
+  productoId: number,
+  nombreProducto:string,
+  vendedor: string,
+  categoria: string,
+  stock:number,
+  precio: number,
+  calificacionPromedio: number,
+}
+
+/*
+{
+      id: 1,
+      name: "Aceite de Oliva Orgánico",
+      vendor: "EcoFarm S.L.",
+      category: "Alimentación",
+      sales: 456,
+      status: "active",
+    },
+    {
+      id: 2,
+      name: "Jabón Natural Lavanda",
+      vendor: "Natural Beauty Co.",
+      category: "Cosmética",
+      sales: 789,
+      status: "active",
+    },
+    {
+      id: 3,
+      name: "Bolsa Algodón Reutilizable",
+      vendor: "PackGreen",
+      category: "Hogar",
+      sales: 234,
+      status: "pending",
+    }
+ */
+export function AdminPanel(/*{ onNavigate }: AdminPanelProps*/) {
   const [activeTab, setActiveTab] = useState("vendors");
+  const [openModal, setOpenModal] = useState<boolean>(null);
+  const [childModal, setChildModal] = useState<boolean>(null);
+
+  /*Product*/
+  const [products, setProducts] =  useState<Product[]>();
+  let [activeProduct, setActiveProduct] =  useState<Product| null>(null);
+  const [indexProduct, setIndexProduct] =  useState<number>(null);
+
+  /*Vendor*/
+  const [Vendors, setVendors] = useState([]);
+  const [indexVendor, setIndexVendor] = useState([]);
+
+  useEffect(() => {
+    setProducts(null);
+
+    switch (activeTab) {
+      case "vendors":
+        console.log( "En tab "+ activeTab);
+        break;
+
+      case "products":
+        console.log( "En tab "+ activeTab);
+        let fetchProd = async () => {
+          const response = await getElements("productos")
+          setProducts(response);
+        }
+        fetchProd().catch(e => console.log(e));
+
+        break;
+    }
+  }, [activeTab]);
+
+  /*
+  useEffect(() => {
+    console.log(products);
+  }, [products]);*/
+
+  useEffect(() => {
+    console.log(activeProduct);
+  }, [activeProduct]);
+
+  useEffect(() => {
+    console.log(indexProduct);
+  }, [indexProduct]);
+
+  /*
+    useEffect(() => {
+      console.log(deletedProduct);
+
+    }, [deletedProduct, products, activeProduct]);*/
+
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -332,9 +367,6 @@ export function AdminPanel({ onNavigate }: AdminPanelProps) {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
                             <Edit className="w-4 h-4" />
                           </Button>
                           <Button variant="ghost" size="icon">
@@ -367,55 +399,45 @@ export function AdminPanel({ onNavigate }: AdminPanelProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="text-foreground">
-                        {product.name}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {product.vendor}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {product.category}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {product.sales}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            product.status === "active"
-                              ? "default"
-                              : "secondary"
-                          }
-                          className={
-                            product.status === "active"
-                              ? "bg-green-100 text-green-800"
-                              : ""
-                          }
-                        >
-                          {product.status === "active" ? "Activo" : "Pendiente"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                  {products && products.map((product, index) => (
+                      <TableRow key={product.productoId}>
+                        <TableCell className="text-foreground">
+                          {product.nombreProducto}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {product.vendedor}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {product.categoria}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {product.stock}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {product.precio}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="icon">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              setActiveProduct(product);
+                              setOpenModal(true);
+                              setIndexProduct(index);
+                            }}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </Card>
           </TabsContent>
+              {activeProduct && (ModalDeleteConfirmation("productos", indexProduct, activeProduct.productoId, activeProduct.nombreProducto, products, setProducts,openModal, setOpenModal, setChildModal ))}
+              {childModal && (ModalOperationState(childModal,setChildModal))}
 
           {/* Orders Tab */}
           <TabsContent value="orders">
@@ -515,6 +537,7 @@ export function AdminPanel({ onNavigate }: AdminPanelProps) {
           </TabsContent>
         </Tabs>
       </div>
+
     </div>
-  );
+  )
 }

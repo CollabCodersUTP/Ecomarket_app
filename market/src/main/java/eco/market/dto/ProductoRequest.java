@@ -4,17 +4,16 @@ import eco.market.entity.Categoria;
 import eco.market.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class ProductoResponse {
+public class ProductoRequest {
 
-    private Integer productoId;
+    private Integer idVendedor;
 
-    private String vendedor;
-
-    private String categoria;
+    private Integer idCategoria;
 
     private String nombreProducto;
 
@@ -22,9 +21,9 @@ public class ProductoResponse {
 
     private BigDecimal precio;
 
-    private BigDecimal precioOriginal;
-
     private Integer stock;
+
+    /*
 
     private String imagenPrincipal;
 
@@ -39,12 +38,6 @@ public class ProductoResponse {
     private BigDecimal calificacionPromedio;
 
     private Integer totalCalificaciones;
+    */
 
-    private Boolean estaActivo;
-
-    private Boolean estaVerificado;
-
-    private LocalDateTime fechaCreacion;
-
-    private LocalDateTime fechaActualizacion;
 }

@@ -4,8 +4,8 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 interface HeaderProps {
-  onNavigate: (page: string) => void;
-  currentPage: string;
+  /*onNavigate: (page: string) => void;
+  currentPage: string;*/
   cartCount: number;
 }
 
@@ -35,7 +35,7 @@ export function Header({ onNavigate, currentPage, cartCount }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button
-            onClick={() => onNavigate("home")}
+            //onClick={() => onNavigate("home")}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
@@ -61,14 +61,14 @@ export function Header({ onNavigate, currentPage, cartCount }: HeaderProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onNavigate("catalog")}
+              //onClick={() => onNavigate("catalog")}
             >
               <Menu className="w-5 h-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onNavigate("favorites")}
+              //onClick={() => onNavigate("favorites")}
             >
               <Heart className="w-5 h-5" />
             </Button>
@@ -76,7 +76,7 @@ export function Header({ onNavigate, currentPage, cartCount }: HeaderProps) {
               variant="ghost"
               size="icon"
               className="relative"
-              onClick={() => onNavigate("cart")}
+              //onClick={() => onNavigate("cart")}
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
@@ -110,7 +110,7 @@ export function Header({ onNavigate, currentPage, cartCount }: HeaderProps) {
               </Button>
             )}
             <Button
-              onClick={() => onNavigate("vendor")}
+              //onClick={() => onNavigate("vendor")}
               className="ml-2 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Vender
