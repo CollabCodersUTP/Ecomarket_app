@@ -4,9 +4,10 @@ import { Badge } from "./ui/badge";
 import { Leaf, ShoppingBag, Users, Award, ArrowRight } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
-/*interface HomePageProps {
+interface HomePageProps {
   onNavigate: (page: string) => void;
-}*/
+}
+
 
 const categories = [
   { name: "Alimentación", icon: "🥬", products: 234 },
@@ -56,7 +57,7 @@ const featuredProducts = [
   },
 ];
 
-export function HomePage(/*{ onNavigate }: HomePageProps*/) {
+export function HomePage(onNavigate : HomePageProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -236,3 +237,5 @@ export function HomePage(/*{ onNavigate }: HomePageProps*/) {
     </div>
   );
 }
+
+

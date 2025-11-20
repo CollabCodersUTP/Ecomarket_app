@@ -18,9 +18,13 @@ import {
 
 interface CheckoutProps {
   onNavigate: (page: string) => void;
+  cartItems?: any[];
+  onUpdateQuantity?: (productoId: number, cantidad: number) => void;
+  onRemoveItem?: (productoId: number) => void;
+  cartTotal?: number;
 }
 
-const cartItems = [
+const defaultCartItems = [
   {
     id: 1,
     name: "Aceite de Oliva Orgánico Extra Virgen",
@@ -37,14 +41,15 @@ const cartItems = [
   },
 ];
 
-export function Checkout({ onNavigate }: CheckoutProps) {
+export function Checkout({ onNavigate, cartItems: propItems, onUpdateQuantity, onRemoveItem, cartTotal: propTotal }: CheckoutProps) {
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [shippingMethod, setShippingMethod] = useState("standard");
 
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const cartItems = propItems || defaultCartItems;
+  const calculatedSubtotal: number = propTotal ?? cartItems.reduce((acc: number, item: any) => acc + (item.precio || item.price) * (item.cantidad || item.quantity), 0);
   const shipping = shippingMethod === "express" ? 5.99 : 0;
-  const total = subtotal + shipping;
+  const total = calculatedSubtotal + shipping;
 
   const steps = [
     { number: 1, title: "Carrito", icon: ShoppingCart },
@@ -336,7 +341,7 @@ export function Checkout({ onNavigate }: CheckoutProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>€{subtotal.toFixed(2)}</span>
+                  <span>€{calculatedSubtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span>Envío</span>
