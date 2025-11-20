@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Header } from "./components/Header";
-import {BrowserRouter, Routes, Route} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HomePage } from "./components/HomePage";
 import { ProductCatalog } from "./components/ProductCatalog";
 import { AuthPage } from "./components/AuthPage";
@@ -13,214 +13,148 @@ import { OrderTracking } from "./components/OrderTracking";
 import { ReturnsManagement } from "./components/ReturnsManagement";
 import { Toaster } from "./components/ui/sonner";
 
-type Page =
-  | "home"
-  | "catalog"
-  | "auth"
-  | "account"
-  | "product"
-  | "vendor"
-  | "cart"
-  | "checkout"
-  | "admin"
-  | "orders"
-  | "returns"
-  | "favorites";
-
 function App() {
-
-  //const [currentPage, setCurrentPage] = useState<Page>("home");
   const [cartCount, setCartCount] = useState(0);
-
-  /*const handleNavigate = (page: string) => {
-    setCurrentPage(page as Page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };*/
 
   const handleAddToCart = () => {
     setCartCount((prev) => prev + 1);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        /*onNavigate={handleNavigate}
-        currentPage={currentPage}*/
-        cartCount={cartCount}
-      />
+    <BrowserRouter>
+      <div className="min-h-screen bg-background">
+        <Header cartCount={cartCount} />
 
-      {currentPage === "home" && (
-        <HomePage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "catalog" && (
-        <ProductCatalog onNavigate={handleNavigate} />
-      )}
-      {currentPage === "auth" && (
-        <AuthPage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "account" && (
-        <AccountPage onNavigate={handleNavigate} />
-      )}
-      {currentPage === "product" && (
-        <ProductDetail
-          onNavigate={handleNavigate}
-          onAddToCart={handleAddToCart}
-        />
-      )}
-      {currentPage === "vendor" && (
-        <VendorDashboard onNavigate={handleNavigate} />
-      )}
-      {currentPage === "cart" && (
-        <Checkout onNavigate={handleNavigate} />
-      )}
-      {currentPage === "checkout" && (
-        <Checkout onNavigate={handleNavigate} />
-      )}
-      {currentPage === "admin" && (
-        <AdminPanel onNavigate={handleNavigate} />
-      )}
-      {currentPage === "orders" && (
-        <OrderTracking onNavigate={handleNavigate} />
-      )}
-      {currentPage === "returns" && (
-        <ReturnsManagement onNavigate={handleNavigate} />
-      )}
-      {currentPage === "favorites" && (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-foreground mb-2">Favoritos</h2>
-            <p className="text-muted-foreground">
-              Esta sección está en desarrollo
-            </p>
-          </div>
-        </div>
-      )}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/catalog" element={<ProductCatalog />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route
+            path="/product/:id"
+            element={<ProductDetail onAddToCart={handleAddToCart} />}
+          />
+          <Route path="/vendor" element={<VendorDashboard />} />
+          <Route path="/cart" element={<Checkout />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/orders" element={<OrderTracking />} />
+          <Route path="/returns" element={<ReturnsManagement />} />
+          <Route
+            path="/favorites"
+            element={
+              <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                  <h2 className="text-foreground mb-2">Favoritos</h2>
+                  <p className="text-muted-foreground">
+                    Esta sección está en desarrollo
+                  </p>
+                </div>
+              </div>
+            }
+          />
+        </Routes>
 
-      <Toaster />
+        <Toaster />
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-border mt-16">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h4 className="text-foreground mb-4">
-                Sobre Ecomarket
-              </h4>
-              <p className="text-muted-foreground text-sm">
-                Marketplace líder en productos ecológicos y
-                sostenibles. Conectamos productores responsables
-                con consumidores conscientes.
+        {/* Footer */}
+        <footer className="bg-white border-t border-border mt-16">
+          <div className="container mx-auto px-4 py-12">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div>
+                <h4 className="text-foreground mb-4">Sobre Ecomarket</h4>
+                <p className="text-muted-foreground text-sm">
+                  Marketplace líder en productos ecológicos y sostenibles.
+                  Conectamos productores responsables con consumidores
+                  conscientes.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-foreground mb-4">Comprar</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>
+                    <a href="/catalog" className="hover:text-primary">
+                      Catálogo de Productos
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/catalog" className="hover:text-primary">
+                      Categorías
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/catalog" className="hover:text-primary">
+                      Ofertas Especiales
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/catalog" className="hover:text-primary">
+                      Nuevos Productos
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-foreground mb-4">Vender</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>
+                    <a href="/vendor" className="hover:text-primary">
+                      Empezar a Vender
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/vendor" className="hover:text-primary">
+                      Guía del Vendedor
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-primary">
+                      Certificaciones
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-primary">
+                      Tarifas
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-foreground mb-4">Soporte</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>
+                    <a href="#" className="hover:text-primary">
+                      Centro de Ayuda
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/orders" className="hover:text-primary">
+                      Seguimiento de Pedidos
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/returns" className="hover:text-primary">
+                      Devoluciones
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-primary">
+                      Contacto
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
+              <p>
+                © 2024 Ecomarket. Todos los derechos reservados. | Política de
+                Privacidad | Términos y Condiciones
               </p>
             </div>
-            <div>
-              <h4 className="text-foreground mb-4">Comprar</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("catalog")}
-                    className="hover:text-primary"
-                  >
-                    Catálogo de Productos
-                  </button>
-                </li>
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("catalog")}
-                    className="hover:text-primary"
-                  >
-                    Categorías
-                  </button>
-                </li>
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("catalog")}
-                    className="hover:text-primary"
-                  >
-                    Ofertas Especiales
-                  </button>
-                </li>
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("catalog")}
-                    className="hover:text-primary"
-                  >
-                    Nuevos Productos
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-foreground mb-4">Vender</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("vendor")}
-                    className="hover:text-primary"
-                  >
-                    Empezar a Vender
-                  </button>
-                </li>
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("vendor")}
-                    className="hover:text-primary"
-                  >
-                    Guía del Vendedor
-                  </button>
-                </li>
-                <li>
-                  <button className="hover:text-primary">
-                    Certificaciones
-                  </button>
-                </li>
-                <li>
-                  <button className="hover:text-primary">
-                    Tarifas
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-foreground mb-4">Soporte</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <button className="hover:text-primary">
-                    Centro de Ayuda
-                  </button>
-                </li>
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("orders")}
-                    className="hover:text-primary"
-                  >
-                    Seguimiento de Pedidos
-                  </button>
-                </li>
-                <li>
-                  <button
-                    //onClick={() => handleNavigate("returns")}
-                    className="hover:text-primary"
-                  >
-                    Devoluciones
-                  </button>
-                </li>
-                <li>
-                  <button className="hover:text-primary">
-                    Contacto
-                  </button>
-                </li>
-              </ul>
-            </div>
           </div>
-          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>
-              © 2024 Ecomarket. Todos los derechos reservados.
-              | Política de Privacidad | Términos y Condiciones
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </BrowserRouter>
   );
 }
 
