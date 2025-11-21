@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useState, useEffect } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -42,11 +42,26 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {postElement, getElements, deleteById} from "./util/requests";
-import {ModalDeleteConfirmation, ModalOperationState} from "./ui/modalConfirmation";
 
 interface VendorDashboardProps {
   onNavigate: (page: string) => void;
+}
+
+interface ProductoVendedor {
+  productoId: number;
+  nombreProducto: string;
+  descripcion: string;
+  precio: number;
+  precioOriginal: number;
+  stock: number;
+  esOrganico: boolean;
+  esVegano: boolean;
+  nombreCategoria: string;
+  nombreVendedor: string;
+  imagenPrincipal: string;
+  estaActivo: boolean;
+  estaVerificado: boolean;
+  fechaCreacion: string;
 }
 
 const salesData = [
@@ -58,124 +73,148 @@ const salesData = [
   { name: "Jun", ventas: 5500 },
 ];
 
-
-type Product = {
-  productoId: number,
-  nombreProducto:string,
-  vendedor: string,
-  categoria: string,
-  stock:number,
-  precio: number,
-  calificacionPromedio: number,
-  estaActivo: boolean
-}
-
-type Category = {
-  "categoriaId": number,
-  "nombreCategoria": string,
-  "descripcion": string,
-  "imagenUrl": null,
-}
-
-type BodyProduct = {
-  vendedor: number,
-  nombreProducto: string,
-  categoria: number,
-  descripcion: string,
-  precio: number,
-  stock: number
-}
-
-export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
+export function VendorDashboard({ onNavigate }: VendorDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [openModal, setOpenModal] = useState<boolean>(null);
-  const [childModal, setChildModal] = useState<boolean>(null);
-
-  /*Categoria*/
-  const [category, setCategory] = useState<Category[]>();
-
-
-  /*Productos*/
-  const [products, setProducts] = useState<Product[]>();
-  let [activeProduct, setActiveProduct] =  useState<Product| null>(null);
-  const [indexProduct, setIndexProduct] =  useState<number>(null);
+  const [user, setUser] = useState<any>(null);
+  const [productos, setProductos] = useState<ProductoVendedor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // State for Add Product Form
+  const [productName, setProductName] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [esOrganico, setEsOrganico] = useState(false);
+  const [esVegano, setEsVegano] = useState(false);
 
-  const [productNameForm, setProductNameForm] = useState<string>("");
-  const [categoryForm, setCategoryForm] = useState("");
-  const [categoryIdForm, setCategoryIdForm] = useState<number>(null);
-  const [descriptionForm, setDescriptionForm] = useState("");
-  const [priceForm, setPriceForm] = useState<number>(0);
-  const [stockForm, setStockForm] = useState<number>(0);
-
-  const handleSelectedChange = (selectedElement:string) => {
-        setCategoryForm(selectedElement);
-
-        const selectedCat = category.find((cat) => cat.nombreCategoria === selectedElement);
-        if (selectedCat){
-          setCategoryIdForm(selectedCat.categoriaId);
-          console.log("selected", selectedCat, categoryForm);
-        }
-  }
-
-  const [bodyForm, setBodyForm] = useState<BodyProduct>();
-  const submit = () => {
-        const data: BodyProduct = {
-              vendedor: 1,
-              categoria: categoryIdForm,
-              nombreProducto: productNameForm,
-              descripcion: descriptionForm,
-              precio: priceForm,
-              stock: stockForm
-        }
-
-        const fetchFormProduct = async () => {
-          const responseForm = await postElement("productos", data)
-          console.log("responseForm", responseForm);
-        }
-        fetchFormProduct().catch(e => console.log(e))
-  }
-
+  // Cargar usuario del localStorage
   useEffect(() => {
-    setProducts(null);
-
-    switch (activeTab) {
-      case "overview":
-        console.log( "En tab "+ activeTab);
-        break;
-
-      case "products":
-        console.log( "En tab "+ activeTab);
-        const fetchProd = async () => {
-          const responseProducts = await getElements("productos")
-          setProducts(responseProducts);
-        }
-        fetchProd().catch(e => console.log(e));
-
-        break;
-
-      case "add-product" :
-        const fetchCat = async () => {
-          const responseCategories = await getElements("categorias");
-          setCategory(responseCategories);
-        }
-        fetchCat().catch(e => console.log(e));
-
+    const userStr = localStorage.getItem("user"); 
+    if (userStr) {
+      setUser(JSON.parse(userStr));
     }
-  }, [activeTab]);
+  }, []);
 
+  // Cargar productos del vendedor
+  useEffect(() => {
+    if (user) {
+      cargarProductos();
+    }
+  }, [user]);
 
-  const handlePublishProduct = (e: React.FormEvent) => {
+  const cargarProductos = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:8080/api/productos/vendedor/${user.usuarioId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setProductos(data);
+      }
+    } catch (err) {
+      setError("Error al cargar productos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublishProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Publishing product:", {
-      productNameForm,
-      categoryForm,
-      descriptionForm,
-      priceForm,
-      stockForm,
-    });
-  }
+    setError("");
+    setSuccess("");
+
+    if (!productName || !category || !description || !price || !stock) {
+      setError("Todos los campos son requeridos");
+      return;
+    }
+
+    if (!user) {
+      setError("Debe estar autenticado");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const payload = {
+        nombreProducto: productName,
+        descripcion: description,
+        precio: parseFloat(price),
+        stock: parseInt(stock),
+        categoriaId: parseInt(category),
+        esOrganico,
+        esVegano,
+      };
+
+      const response = await fetch("http://localhost:8080/api/productos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setSuccess(
+          "Producto publicado correctamente. Pendiente de verificación."
+        );
+        setProductName("");
+        setCategory("");
+        setDescription("");
+        setPrice("");
+        setStock("");
+        setEsOrganico(false);
+        setEsVegano(false);
+        setActiveTab("products");
+        await cargarProductos();
+      } else {
+        const errorData = await response.text();
+        setError(errorData || "Error al publicar producto");
+      }
+    } catch (err) {
+      setError("Error al conectar con el servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEliminarProducto = async (productoId: number) => {
+    if (
+      !user ||
+      !confirm("¿Está seguro de que desea eliminar este producto?")
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:8080/api/productos/${productoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setSuccess("Producto eliminado correctamente");
+        await cargarProductos();
+      } else {
+        setError("Error al eliminar producto");
+      }
+    } catch (err) {
+      setError("Error al conectar con el servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,6 +237,17 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
             <TabsTrigger value="add-product">Añadir Producto</TabsTrigger>
             <TabsTrigger value="orders">Pedidos</TabsTrigger>
           </TabsList>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <p className="text-green-800">{success}</p>
+            </div>
+          )}
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
@@ -289,32 +339,37 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                 </Button>
               </div>
               <div className="space-y-3">
-                {products && products.slice(0, 3).map((product) => (
+                {productos.slice(0, 3).map((producto: ProductoVendedor) => (
                   <div
-                    key={product.productoId}
+                    key={producto.productoId}
                     className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
                   >
                     <div>
-                      <h4 className="text-foreground">{product.nombreProducto}</h4>
+                      <h4 className="text-foreground">
+                        {producto.nombreProducto}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
-                         ventasss
+                        {producto.nombreCategoria}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-primary">€{product.precio}</div>
+                      <div className="text-primary">€{producto.precio}</div>
                       <Badge
                         variant={
-                          product.estaActivo === true
-                            ? "default"
-                            : "destructive"
+                          producto.stock > 20 ? "default" : "destructive"
                         }
                         className="mt-1"
                       >
-                        Stock: {product.stock}
+                        Stock: {producto.stock}
                       </Badge>
                     </div>
                   </div>
                 ))}
+                {productos.length === 0 && (
+                  <p className="text-muted-foreground text-center py-4">
+                    No hay productos aún
+                  </p>
+                )}
               </div>
             </Card>
           </TabsContent>
@@ -347,45 +402,41 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products && products.map((product, index) => (
-                    <TableRow key={product.productoId}>
+                  {productos.map((producto: ProductoVendedor) => (
+                    <TableRow key={producto.productoId}>
                       <TableCell>
-                        <div className="text-foreground">{product.nombreProducto}</div>
+                        <div className="text-foreground">
+                          {producto.nombreProducto}
+                        </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {product.categoria}
+                        {producto.nombreCategoria}
                       </TableCell>
                       <TableCell className="text-foreground">
-                        €{product.precio}
+                        €{producto.precio.toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            product.stock > 20 ? "default" : "destructive"
+                            producto.stock > 20 ? "default" : "destructive"
                           }
                         >
-                          {product.stock}
+                          {producto.stock}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {product.calificacionPromedio}
-                      </TableCell>
+                      <TableCell className="text-muted-foreground">-</TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            product.estaActivo === true
-                              ? "default"
-                              : "secondary"
+                            producto.estaActivo ? "default" : "secondary"
                           }
                           className={
-                            product.estaActivo === true
+                            producto.estaActivo
                               ? "bg-green-100 text-green-800"
                               : ""
                           }
                         >
-                          {product.estaActivo === true
-                            ? "Activo"
-                            : "Stock Bajo"}
+                          {producto.estaActivo ? "Activo" : "Stock Bajo"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -396,11 +447,14 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                           <Button variant="ghost" size="icon">
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => {
-                            setActiveProduct(product);
-                            setOpenModal(true);
-                            setIndexProduct(index);
-                          }}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              handleEliminarProducto(producto.productoId)
+                            }
+                            disabled={loading}
+                          >
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
                         </div>
@@ -411,8 +465,6 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
               </Table>
             </Card>
           </TabsContent>
-          {activeProduct && (ModalDeleteConfirmation("productos", indexProduct, activeProduct.productoId, activeProduct.nombreProducto, products, setProducts,openModal, setOpenModal, setChildModal ))}
-          {childModal && (ModalOperationState(childModal,setChildModal))}
 
           {/* Add Product Tab */}
           <TabsContent value="add-product">
@@ -424,24 +476,48 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                   <Input
                     id="product-name"
                     placeholder="Ej: Aceite de Oliva Orgánico Extra Virgen"
-                    value={productNameForm}
-                    onChange={(e) => setProductNameForm(e.target.value)}
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">Categoría *</Label>
-                    <Select value={categoryForm} onValueChange={handleSelectedChange}>
+                    <Select value={category} onValueChange={setCategory}>
                       <SelectTrigger id="category">
                         <SelectValue placeholder="Seleccionar categoría" />
                       </SelectTrigger>
                       <SelectContent>
-                        {category && category.map((categoria) => (
-                            <SelectItem key={categoria.categoriaId} value={categoria.nombreCategoria}>{categoria.nombreCategoria}</SelectItem>
-                        ))}
+                        <SelectItem value="1">Alimentación</SelectItem>
+                        <SelectItem value="2">Cosmética Natural</SelectItem>
+                        <SelectItem value="3">Textil Sostenible</SelectItem>
+                        <SelectItem value="4">Hogar Ecológico</SelectItem>
+                        <SelectItem value="5">Cuidado Personal</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Certificaciones</Label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={esOrganico}
+                          onChange={(e) => setEsOrganico(e.target.checked)}
+                        />
+                        <span className="text-sm">Orgánico</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={esVegano}
+                          onChange={(e) => setEsVegano(e.target.checked)}
+                        />
+                        <span className="text-sm">Vegano</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -451,8 +527,8 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                     id="description"
                     placeholder="Describe las características ecológicas de tu producto, origen, proceso de producción sostenible..."
                     rows={5}
-                    value={descriptionForm}
-                    onChange={(e) => setDescriptionForm(e.target.value)}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
 
@@ -464,8 +540,8 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                       type="number"
                       step="0.01"
                       placeholder="0.00"
-                      value={priceForm}
-                      onChange={(e) => setPriceForm(parseInt(e.target.value))}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
                     />
                   </div>
 
@@ -475,9 +551,14 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                       id="stock"
                       type="number"
                       placeholder="0"
-                      value={stockForm}
-                      onChange={(e) => setStockForm(parseInt(e.target.value))}
+                      value={stock}
+                      onChange={(e) => setStock(e.target.value)}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="sku">SKU (opcional)</Label>
+                    <Input id="sku" placeholder="Código interno (opcional)" />
                   </div>
                 </div>
 
@@ -501,7 +582,7 @@ export function VendorDashboard(/*{ onNavigate }: VendorDashboardProps*/) {
                   >
                     Publicar Producto
                   </Button>
-                  <Button type="button" variant="outline" onClick={bodyForm}>
+                  <Button type="button" variant="outline">
                     Guardar como Borrador
                   </Button>
                 </div>

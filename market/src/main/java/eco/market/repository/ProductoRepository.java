@@ -10,6 +10,7 @@ import java.util.List;
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     List<Producto> findByEstaActivoTrueAndEstaVerificadoTrue();
     List<Producto> findByCategoria_CategoriaIdAndEstaActivoTrueAndEstaVerificadoTrue(Integer categoriaId);
+    List<Producto> findByVendedor_UsuarioId(Integer usuarioId);
     
     @Query("SELECT p FROM Producto p WHERE p.estaActivo = true AND p.estaVerificado = true ORDER BY p.fechaCreacion DESC")
     List<Producto> findActiveProductsOrderByDate();

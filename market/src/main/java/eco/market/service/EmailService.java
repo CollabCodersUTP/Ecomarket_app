@@ -19,7 +19,7 @@ public class EmailService {
             mensaje.setText("Hola " + nombre + ",\n\n" +
                     "¡Bienvenido a EcoMarket! Tu cuenta ha sido creada exitosamente.\n" +
                     "Ahora puedes explorar nuestros productos ecológicos y realizar tus compras.\n\n" +
-                    "¡Gracias por unirte a nuestra comunidad!\n\n" +
+                    "¡Gracias por unirte a nuestra comunidad💻!\n\n" +
                     "Saludos,\nEl equipo de EcoMarket");
             
             mailSender.send(mensaje);
