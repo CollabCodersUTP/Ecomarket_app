@@ -1,6 +1,5 @@
 package eco.market.service;
 
-import eco.market.dto.ProductoRequest;
 import eco.market.dto.ProductoResponse;
 import eco.market.dto.CrearProductoRequest;
 import eco.market.entity.Categoria;
@@ -12,7 +11,6 @@ import eco.market.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,9 +19,6 @@ public class ProductoService {
 
     @Autowired
     private ProductoRepository productoRepository;
-
-    @Autowired
-    private UsuarioRepository userRepository;
 
     @Autowired
     private CategoriaRepository categoriaRepository;
@@ -36,17 +31,6 @@ public class ProductoService {
                 .stream()
                 .map(this::convertirAResponse)
                 .collect(Collectors.toList());
-    }
-
-    public List<ProductoResponse> getAllProducts() {
-        return obtenerTodosLosProductos();
-    }
-
-    public void deleteById(Integer idProduct) throws Exception {
-        if (!productoRepository.existsById(idProduct)) {
-            throw new Exception("Error");
-        }
-        productoRepository.deleteById(idProduct);
     }
 
     public List<ProductoResponse> obtenerProductosPorCategoria(Integer categoriaId) {

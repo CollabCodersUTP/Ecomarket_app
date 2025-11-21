@@ -25,16 +25,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/productos/**").permitAll()
-                        .requestMatchers("/api/categorias/**").permitAll()
-                        .requestMatchers("/api/notificaciones/**").permitAll()
-                        .requestMatchers("/api/pedidos/**").permitAll()
-                        .anyRequest().authenticated());
-
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/productos/**").permitAll()
+                .requestMatchers("/api/categorias/**").permitAll()
+                .requestMatchers("/api/notificaciones/**").permitAll()
+                .requestMatchers("/api/pedidos/**").permitAll()
+                .anyRequest().authenticated()
+            );
+        
         return http.build();
     }
 
