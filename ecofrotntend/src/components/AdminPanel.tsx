@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import {ModalDeleteConfirmation, ModalOperationState} from "./ui/modalConfirmation";
+import {ModalDeleteConfirmation} from "./ui/modalConfirmation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
 import {Users, Package, TrendingUp, DollarSign, UserCheck, ShoppingBag, Eye, Edit,Trash2,} from "lucide-react";
@@ -436,8 +436,12 @@ export function AdminPanel(/*{ onNavigate }: AdminPanelProps*/) {
               </Table>
             </Card>
           </TabsContent>
-              {activeProduct && (ModalDeleteConfirmation("productos", indexProduct, activeProduct.productoId, activeProduct.nombreProducto, products, setProducts,openModal, setOpenModal, setChildModal ))}
-              {childModal && (ModalOperationState(childModal,setChildModal))}
+              {
+                //activeProduct && (ModalDeleteConfirmation("productos", indexProduct, activeProduct.productoId, activeProduct.nombreProducto, products, setProducts,openModal, setOpenModal, setChildModal ))
+              }
+              {
+                //childModal && (ModalOperationState(childModal,setChildModal))
+              }
 
           {/* Orders Tab */}
           <TabsContent value="orders">

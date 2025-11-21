@@ -1,10 +1,12 @@
 package eco.market.controller;
 
+import eco.market.dto.ProductoRequest;
 import eco.market.dto.ProductoResponse;
 import eco.market.dto.CrearProductoRequest;
 import eco.market.config.JwtUtil;
 import eco.market.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -35,7 +37,7 @@ public class ProductoController {
         }
         String token = authHeader.substring(7);
         String rol = jwtUtil.getRolFromToken(token);
-        if (!rol.equals("VENDEDOR")) {
+        if (!rol.equals("vendedor")) {
             throw new RuntimeException("Solo los vendedores pueden crear productos");
         }
     }
@@ -64,43 +66,40 @@ public class ProductoController {
     
     // Endpoints para vendedores
     
-    @PostMapping
+    @PostMapping("/vendedor")
     public ResponseEntity<?> crearProducto(
-            @Valid @RequestBody CrearProductoRequest request,
+            @Valid @RequestBody ProductoRequest request,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             validarVendedor(authHeader);
-            Integer vendedorId = obtenerUsuarioIdDelToken(authHeader);
-            ProductoResponse producto = productoService.crearProducto(request, vendedorId);
-            return ResponseEntity.ok(producto);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(productoService.crearProducto(request));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
     
-    @PutMapping("/{id}")
+    @PutMapping("/vendedor/{productId}")
     public ResponseEntity<?> actualizarProducto(
-            @PathVariable Integer id, 
-            @Valid @RequestBody CrearProductoRequest request,
+            @PathVariable Integer productId,
+            @Valid @RequestBody ProductoRequest request,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             validarVendedor(authHeader);
-            Integer vendedorId = obtenerUsuarioIdDelToken(authHeader);
-            ProductoResponse producto = productoService.actualizarProducto(id, request, vendedorId);
-            return ResponseEntity.ok(producto);
+            return ResponseEntity.ok(productoService.actualizarProducto(productId,obtenerUsuarioIdDelToken(authHeader) ,request));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
     
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/vendedor/{productId}")
     public ResponseEntity<?> eliminarProducto(
-            @PathVariable Integer id,
+            @PathVariable Integer productId,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             validarVendedor(authHeader);
-            Integer vendedorId = obtenerUsuarioIdDelToken(authHeader);
-            productoService.eliminarProducto(id, vendedorId);
+            productoService.eliminarProducto(productId, obtenerUsuarioIdDelToken(authHeader));
             return ResponseEntity.ok("Producto eliminado correctamente");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

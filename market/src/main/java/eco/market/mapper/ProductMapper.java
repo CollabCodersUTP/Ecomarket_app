@@ -5,6 +5,7 @@ import eco.market.dto.ProductoResponse;
 import eco.market.entity.Producto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
@@ -23,5 +24,10 @@ public interface ProductMapper {
     @Mapping(target = "vendedor", source = "vendedor.nombre")
     @Mapping(target = "categoria", source = "categoria.nombreCategoria")
     ProductoResponse toResponse (Producto producto);
+
+    @Mapping(target = "productoId", ignore = true)
+    @Mapping(target="vendedor", ignore = true)
+    @Mapping(target="categoria", ignore = true)
+    void update (@MappingTarget Producto producto, ProductoRequest request);
 
 }
