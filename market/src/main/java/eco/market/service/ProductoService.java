@@ -1,10 +1,12 @@
 package eco.market.service;
 
+import eco.market.dto.ProductoRequest;
 import eco.market.dto.ProductoResponse;
 import eco.market.dto.CrearProductoRequest;
 import eco.market.entity.Categoria;
 import eco.market.entity.Producto;
 import eco.market.entity.Usuario;
+import eco.market.mapper.ProductMapper;
 import eco.market.repository.CategoriaRepository;
 import eco.market.repository.ProductoRepository;
 import eco.market.repository.UsuarioRepository;
@@ -21,16 +23,19 @@ public class ProductoService {
     private ProductoRepository productoRepository;
 
     @Autowired
+    private ProductMapper mapper;
+
+    @Autowired
     private CategoriaRepository categoriaRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
     public List<ProductoResponse> obtenerTodosLosProductos() {
-        return productoRepository.findActiveProductsOrderByDate()
+        return productoRepository.findAll()
                 .stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList());
+                .map(mapper::toResponse)
+                .toList();
     }
 
     public List<ProductoResponse> obtenerProductosPorCategoria(Integer categoriaId) {
@@ -81,13 +86,22 @@ public class ProductoService {
 
     // Métodos para CRUD de productos por vendedor
 
-    public ProductoResponse crearProducto(CrearProductoRequest request, Integer vendedorId) {
-        Usuario vendedor = usuarioRepository.findById(vendedorId)
+    public ProductoResponse crearProducto(ProductoRequest request) {
+        Usuario usuario = usuarioRepository.findById(request.getVendedorId())
                 .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
 
         Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+
+        Producto producto = mapper.toEntity(request);
+        producto.setVendedor(usuario);
+        producto.setCategoria(categoria);
+
+        return mapper.toResponse(productoRepository.save(producto));
+
+
+        /*
         Producto producto = new Producto();
         producto.setNombreProducto(request.getNombreProducto());
         producto.setDescripcion(request.getDescripcion());
@@ -105,10 +119,11 @@ public class ProductoService {
         producto.setFechaCreacion(LocalDateTime.now());
 
         Producto productoGuardado = productoRepository.save(producto);
-        return convertirAResponse(productoGuardado);
+        return convertirAResponse(productoGuardado);*/
     }
 
-    public ProductoResponse actualizarProducto(Integer productoId, CrearProductoRequest request, Integer vendedorId) {
+    public ProductoResponse actualizarProducto(Integer productoId, Integer vendedorId,ProductoRequest request) {
+
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -117,9 +132,17 @@ public class ProductoService {
             throw new RuntimeException("No tienes permiso para actualizar este producto");
         }
 
+        Usuario usuario = usuarioRepository.findById(request.getVendedorId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+        mapper.update(producto, request);
+        producto.setVendedor(usuario);
+        producto.setCategoria(categoria);
+        return mapper.toResponse(productoRepository.save(producto));
+        /*
         producto.setNombreProducto(request.getNombreProducto());
         producto.setDescripcion(request.getDescripcion());
         producto.setPrecio(request.getPrecio());
@@ -136,7 +159,7 @@ public class ProductoService {
         producto.setFechaActualizacion(LocalDateTime.now());
 
         Producto productoActualizado = productoRepository.save(producto);
-        return convertirAResponse(productoActualizado);
+        return convertirAResponse(productoActualizado);*/
     }
 
     public void eliminarProducto(Integer productoId, Integer vendedorId) {
@@ -154,7 +177,7 @@ public class ProductoService {
     public List<ProductoResponse> obtenerProductosDelVendedor(Integer vendedorId) {
         return productoRepository.findByVendedor_UsuarioId(vendedorId)
                 .stream()
-                .map(this::convertirAResponse)
-                .collect(Collectors.toList());
+                .map(mapper::toResponse)
+                .toList();
     }
 }

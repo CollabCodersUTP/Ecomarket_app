@@ -67,8 +67,9 @@ const AlertDialogContent = React.forwardRef<
                       backgroundColor: "white",
                       padding: "24px",
                       zIndex: 1001,
-                      border: "1px solid black",
-                      color: "black",
+                      width: "90vw",
+                      maxWidth: maxWidth || "450px",
+                      borderRadius: "8px"
                   }}
                   {...props}
               >

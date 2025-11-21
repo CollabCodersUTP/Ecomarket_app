@@ -85,7 +85,7 @@ function App() {
         </div>
       )}
 
-      <Toaster />
+      <Toaster position={"top-center"}/>
 
       {/* Footer */}
       <footer className="bg-white border-t border-border mt-16">
